@@ -9,7 +9,12 @@ window.displayLoaded = false;
 window.displayError = null;
 </script>
 <style>
-
+body {
+    opacity: 0.0;
+    -webkit-transition: opacity .5s ease-in-out;
+    -moz-transition: opacity .5s ease-in-out;
+    transition: opacity .5s ease-in-out;
+}
 </style>
 </head>
 <body>
@@ -48,9 +53,17 @@ function handleLoad(response) {
 }
 function displayGraph(json) {
     console.debug("displayGraph",json);
+
     // Render here, with JSON data
     results.textContent = JSON.stringify(json);
-    window.displayLoaded = true;
+
+    loaded();
+}
+function loaded() {
+    document.body.style.opacity = "1.0";
+    setTimeout(function() {
+        window.displayLoaded = true;
+    },520);
 }
 
 window.display = function(sessionToken, startDate, endDate) {
