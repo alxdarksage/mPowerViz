@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>mPower</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<script>
+window.displayLoaded = false;
+window.displayError = null;
+</script>
+<style>
+body {
+    opacity: 0.0;
+    -webkit-transition: opacity .5s ease-in-out;
+    -moz-transition: opacity .5s ease-in-out;
+    transition: opacity .5s ease-in-out;
+}
+</style>
+</head>
+<body>
+
+<div id="results"></div>
+
+<script>
+var results = document.getElementById("results");
+var TWO_WEEKS = 1000*60*60*24*14
+
+function nowISOString() {
+    return new Date().toISOString().split("T")[0];
+}
+function twoWeeksAgoISOString() {
+    return new Date(new Date().getTime()-TWO_WEEKS).toISOString().split("T")[0];
+}
+function handleError(message) {
+    window.displayError = message;
+    console.error(message);
+}
+function handleAbort() {
+    handleError('Request aborted.');
+}
+function handleLoad(response) {
+    var status = response.currentTarget.status;
+    var json = JSON.parse(response.currentTarget.responseText);
+    console.debug("handleLoad",json);
+    switch(status) {
+        case 200:
+            return displayGraph(json);
+        case 412:
+            return handleError("User has not consented to participate in study.");
+        default:
+            return handleError(json.message);
+    }
+}
+function displayGraph(json) {
+    console.debug("displayGraph",json);
+
+    // Render here, with JSON data
+    results.textContent = JSON.stringify(json);
+
+    loaded();
+}
+function loaded() {
+    document.body.style.opacity = "1.0";
+    setTimeout(function() {
+        window.displayLoaded = true;
+    },520);
+}
+
+window.display = function(sessionToken, startDate, endDate) {
+    startDate = startDate || twoWeeksAgoISOString();
+    endDate = endDate || nowISOString();
+
+    var url = 'https://webservices.sagebridge.org/parkinson/visualization' +
+        '?startDate='+startDate+'&endDate='+endDate;
+
+    console.info("Querying for ", startDate, "-", endDate);
+    var request = new XMLHttpRequest();
+    request.open('GET', url);
+    request.setRequestHeader("Bridge-Session", sessionToken);
+    request.addEventListener("abort", handleAbort);
+    request.addEventListener("load", handleLoad);
+    request.send();
+}
+</script>
+</body>
+</html>
