@@ -1,5 +1,3 @@
-# mPowerViz
-
 Visualization view for mPower
 
 ## To Use
