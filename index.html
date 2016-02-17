@@ -60,10 +60,8 @@ function displayGraph(json) {
     loaded();
 }
 function loaded() {
+    window.displayLoaded = true;
     document.body.style.opacity = "1.0";
-    setTimeout(function() {
-        window.displayLoaded = true;
-    },520);
 }
 
 window.display = function(sessionToken, startDate, endDate) {
