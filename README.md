@@ -2,7 +2,7 @@
 
 Visualization view for mPower
 
-# To Use
+## To Use
 
 * load index.html in a web view;
 * when the page reports it is loaded, call window.display("users-session-guid", "startDate", "endDate");;
