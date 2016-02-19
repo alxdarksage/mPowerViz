@@ -4,81 +4,200 @@
     <meta charset="utf-8"/>
     <title>mPower</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<script>
-window.displayLoaded = false;
-window.displayError = null;
-</script>
-<style>
-body {
-    opacity: 0.0;
-    -webkit-transition: opacity .5s ease-in-out;
-    -moz-transition: opacity .5s ease-in-out;
-    transition: opacity .5s ease-in-out;
-}
-</style>
+    <link rel="stylesheet" href="style.css"/>
+    <script>
+    window.displayLoaded = false;
+    window.displayError = null;
+    </script>
 </head>
 <body>
+<div id="content">
+    <div id="preamble">
+        <h3>mPower Monthly Report</h3>
 
-<div id="results"></div>
+        <p id="date"></p>
 
-<script>
-var results = document.getElementById("results");
-var TWO_WEEKS = 1000*60*60*24*14
+        <p>The goal of mPower study is to identify modulators of Parkinson disease (PD) symptoms and to find ways
+            to improve quality of life for people with PD. The monthly report summarizes up to your past 30 days
+            activity scores. It also shows the average scores of participants in your age group who do not have PD
+            (the &ldquo;control arm&rdquo; of the study).</p>
 
-function nowISOString() {
-    return new Date().toISOString().split("T")[0];
-}
-function twoWeeksAgoISOString() {
-    return new Date(new Date().getTime()-TWO_WEEKS).toISOString().split("T")[0];
-}
-function handleError(message) {
-    window.displayError = message;
-    console.error(message);
-}
-function handleAbort() {
-    handleError('Request aborted.');
-}
-function handleLoad(response) {
-    var status = response.currentTarget.status;
-    var json = JSON.parse(response.currentTarget.responseText);
-    console.debug("handleLoad",json);
-    switch(status) {
-        case 200:
-            return displayGraph(json);
-        case 412:
-            return handleError("User has not consented to participate in study.");
-        default:
-            return handleError(json.message);
-    }
-}
-function displayGraph(json) {
-    console.debug("displayGraph",json);
+        <p>The purpose of this report is to let you explore key features of your data and to highlight changes that
+            occur relative to your medication schedule. We encourage you to show your report to your doctor or
+            medical provider to start a dialog about your sensor data.</p>
 
-    // Render here, with JSON data
-    results.textContent = JSON.stringify(json);
+        <p><b>The monthly report is provided for informational purpose only and is not intended to provide medical
+            advice, diagnose, treat, cure or prevent disease. You shouldn&rsquo;t use the information that has yet
+            to be validated in place of a consultation with your physician or other healthcare provider.</b></p>
+    </div>
 
-    loaded();
-}
-function loaded() {
-    window.displayLoaded = true;
-    document.body.style.opacity = "1.0";
-}
+    <h3>How many activities did you complete?</h3>
 
-window.display = function(sessionToken, startDate, endDate) {
-    startDate = startDate || twoWeeksAgoISOString();
-    endDate = endDate || nowISOString();
+    <p>The calendar graph below shows whether or not you completed the daily activities pre and post medication.
+        A colored pie piece means you completed the task. Lighter colors represent tasks pre-medication. The darker
+        colors represent task post-medication. The more you do the more colorful your calendar looks. This view
+        may help you see patterns of when you hit your activity goals.</p>
 
-    var url = 'https://webservices.sagebridge.org/parkinson/visualization' +
-        '?startDate='+startDate+'&endDate='+endDate;
+    <table id="calendar">
+        <thead>
+            <tr>
+                <th>Sun</th>
+                <th>Mon</th>
+                <th>Tue</th>
+                <th>Wed</th>
+                <th>Thu</th>
+                <th>Fri</th>
+                <th>Sat</th>
+            </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td id="d34"><canvas id="c34"></canvas></td>
+            <td id="d33"><canvas id="c33"></canvas></td>
+            <td id="d32"><canvas id="c32"></canvas></td>
+            <td id="d31"><canvas id="c31"></canvas></td>
+            <td id="d30"><canvas id="c30"></canvas></td>
+            <td id="d29"><canvas id="c29"></canvas></td>
+            <td id="d28"><canvas id="c28"></canvas></td>
+        </tr>
+        <tr>
+            <td id="d27"><canvas id="c27"></canvas></td>
+            <td id="d26"><canvas id="c26"></canvas></td>
+            <td id="d25"><canvas id="c25"></canvas></td>
+            <td id="d24"><canvas id="c24"></canvas></td>
+            <td id="d23"><canvas id="c23"></canvas></td>
+            <td id="d22"><canvas id="c22"></canvas></td>
+            <td id="d21"><canvas id="c21"></canvas></td>
+        </tr>
+        <tr>
+            <td id="d20"><canvas id="c20"></canvas></td>
+            <td id="d19"><canvas id="c19"></canvas></td>
+            <td id="d18"><canvas id="c18"></canvas></td>
+            <td id="d17"><canvas id="c17"></canvas></td>
+            <td id="d16"><canvas id="c16"></canvas></td>
+            <td id="d15"><canvas id="c15"></canvas></td>
+            <td id="d14"><canvas id="c14"></canvas></td>
+        </tr>
+        <tr>
+            <td id="d13"><canvas id="c13"></canvas></td>
+            <td id="d12"><canvas id="c12"></canvas></td>
+            <td id="d11"><canvas id="c11"></canvas></td>
+            <td id="d10"><canvas id="c10"></canvas></td>
+            <td id="d9"><canvas id="c9"></canvas></td>
+            <td id="d8"><canvas id="c8"></canvas></td>
+            <td id="d7"><canvas id="c7"></canvas></td>
+        </tr>
+        <tr>
+            <td id="d6"><canvas id="c6"></canvas></td>
+            <td id="d5"><canvas id="c5"></canvas></td>
+            <td id="d4"><canvas id="c4"></canvas></td>
+            <td id="d3"><canvas id="c3"></canvas></td>
+            <td id="d2"><canvas id="c2"></canvas></td>
+            <td id="d1"><canvas id="c1"></canvas></td>
+            <td id="d0"><canvas id="c0"></canvas></td>
+        </tr>
+        </tbody>
+    </table>
+    <!--'tapLeft','tapRight','walk','voice','balance'-->
+    <table id="calendar-legend">
+        <tr>
+            <td>
+                <span class="tab" id="tapLeft-pre"></span>
+                <span class="tab" id="tapLeft-post"></span> Tapping-Left
+                <span class="tab" id="tapRight-pre"></span>
+                <span class="tab" id="tapRight-post"></span> Tapping-Right
+                <span class="tab" id="walk-pre"></span>
+                <span class="tab" id="walk-post"></span> Walk
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="tab" id="voice-pre"></span>
+                <span class="tab" id="voice-post"></span> Voice
+                <span class="tab" id="balance-pre"></span>
+                <span class="tab" id="balance-post"></span> Balance
+            </td>
+        </tr>
+    </table>
 
-    console.info("Querying for ", startDate, "-", endDate);
-    var request = new XMLHttpRequest();
-    request.open('GET', url);
-    request.setRequestHeader("Bridge-Session", sessionToken);
-    request.addEventListener("abort", handleAbort);
-    request.addEventListener("load", handleLoad);
-    request.send();
-}
-</script>
+    <h3>Activity Plots</h3>
+
+    <p>These plots represent your performance on four different activities:  voice, walking, gait/balance, and
+        finger tapping. Out of hundreds of sensor measurements collected through the app, we selected your most
+        relevant ones to plot. The graph shows your most relevant measurement statistics pre and post medication
+        for the past 30 days. Because of the normalization and selection of scores these plots may be different
+        from those shown on the app dashboard.</p>
+
+    <p>The horizontal line indicates the average scores of participants in your age group who do not have PD.
+        Activity scores vary from person to person. Some dopaminergic medications can boost the activity score.
+        Good restful sleep and other factors can affect performance and alertness.</p>
+
+    <table id="activities">
+        <tbody>
+            <tr>
+                <td class="legend">
+                    <div>Tapping<br>Left</div>
+                    <img class="flip" src="tap.svg"/>
+                </td>
+                <td class="graph">
+                    <canvas id="tapLeft"></canvas>
+                    <div><span class="tab pre"></span> Off-medication <span class="tab post"></span> On-medication</div>
+                </td>
+            </tr>
+            <tr>
+                <td class="legend">
+                    <div>Tapping<br>Right</div>
+                    <img src="tap.svg"/>
+                </td>
+                <td class="graph">
+                    <canvas id="tapRight"></canvas>
+                    <div><span class="tab pre"></span> Off-medication <span class="tab post"></span> On-medication</div>
+                </td>
+            </tr>
+            <tr>
+                <td class="legend">
+                    <div>Walking</div>
+                    <img src="walk.svg"/>
+                </td>
+                <td class="graph">
+                    <canvas id="walk"></canvas>
+                    <div><span class="tab pre"></span> Off-medication <span class="tab post"></span> On-medication</div>
+                </td>
+            </tr>
+            <tr>
+                <td class="legend">
+                    <div>Voice</div>
+                    <img src="voice.svg"/>
+                </td>
+                <td class="graph">
+                    <canvas id="voice"></canvas>
+                    <div><span class="tab pre"></span> Off-medication <span class="tab post"></span> On-medication</div>
+                </td>
+            </tr>
+            <tr>
+                <td class="legend">
+                    <div>Balance</div>
+                    <img src="balance.svg"/>
+                </td>
+                <td class="graph">
+                    <canvas id="balance"></canvas>
+                    <div><span class="tab pre"></span> Off-medication <span class="tab post"></span> On-medication</div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p class="disclaimer">mPower is for research use only and does not provide medical advice, diagnosis, or treatment. </p>
+
+    <div id="sorry">
+        <h3>Sorry!</h3>
+
+        <p>mPower needs more data to generate a report.</p>
+
+        <p>Try using mPower daily for about 2 weeks</p>
+    </div>
+</div>
+<script src="Chart.min.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
