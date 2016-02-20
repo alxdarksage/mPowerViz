@@ -1,13 +1,8 @@
-var FOUR_WEEKS = 1000*60*60*24*30;
-var ONE_DAY = 1000*60*60*24;
+if (document.location.hash === "#pdf") {
+    document.body.classList.add("showpdf");
+}
 
-document.body.style.opacity = "1.0";
-
-var graphs = ['tapLeft','tapRight','walk','voice','balance'];
-var sliceWidth = 100/10; // The size of a piece of pie. 5 post/pre measures = 10 pie pieces
-var numDays = 14; // Number of days to show on activity graph. We recalculate this on orientation change.
-
-var colors = {
+var COLORS = {
     empty: "#f4f4f4",
     tapLeftPre: "#E9406A",
     tapLeftPost: "#F398AF",
@@ -21,10 +16,15 @@ var colors = {
     balancePost: "#B49CC6"
     /* and two extra colors to burn
      tremorPre: "#58B561",
-     tremorPost: "#A9D7AA",
+     tremorPost: "#A9D7AA"
      */
 };
-var colorKeys = Object.keys(colors);
+var COLOR_KEYS = Object.keys(COLORS);
+var FOUR_WEEKS = 1000*60*60*24*30;
+var ONE_DAY = 1000*60*60*24;
+var GRAPH_IDS = ['tapLeft','tapRight','walk','voice','balance'];
+var SLICE_PERC = 100/10; // The size of a piece of pie. 5 post/pre measures = 10 pie pieces
+var NUM_DAYS = 14; // Number of days to show on activity graph. We recalculate this on orientation change.
 
 function el(id) {
     return document.getElementById(id);
@@ -75,7 +75,7 @@ function makeDummyData(now) {
         var dateString = date.toISOString().split("T")[0];
 
         data[dateString] = {};
-        graphs.forEach(function(graphId) {
+        GRAPH_IDS.forEach(function(graphId) {
             data[dateString][graphId+"Pre"] = Math.random();
             data[dateString][graphId+"Post"] = Math.random();
         });
@@ -98,9 +98,9 @@ function normalizeJson(json) {
         var dayOfData = json.data[dateString];
         var measures = [];
         var j = 1;
-        for (var i=0; i < graphs.length; i++) {
-            var preMeasure = dayOfData[graphs[i]+"Pre"];
-            var postMeasure = dayOfData[graphs[i]+"Post"];
+        for (var i=0; i < GRAPH_IDS.length; i++) {
+            var preMeasure = dayOfData[GRAPH_IDS[i]+"Pre"];
+            var postMeasure = dayOfData[GRAPH_IDS[i]+"Post"];
             measures.push(measureToEntry(preMeasure, j++));
             measures.push(measureToEntry(postMeasure, j++));
         }
@@ -109,13 +109,13 @@ function normalizeJson(json) {
     json.calendar = elements;
 
     var object = {};
-    graphs.forEach(function(graphId) {
+    GRAPH_IDS.forEach(function(graphId) {
         object[graphId] = {pre:[], post:[], labels:[]};
     });
     dateStrings.forEach(function(dateString) {
         var thisDay = new Date(dateString);
         var thisDayString = (thisDay.getMonth()+1)+ "/" + (thisDay.getDate());
-        graphs.forEach(function(graphId) {
+        GRAPH_IDS.forEach(function(graphId) {
             var preMeasure = json.data[dateString][graphId+"Pre"] * 100;
             var postMeasure = json.data[dateString][graphId+"Post"] * 100;
             object[graphId].pre.push(preMeasure);
@@ -130,10 +130,10 @@ function normalizeJson(json) {
 }
 function measureToEntry(measure, num) {
     if (measure > .5) {
-        var color = colors[colorKeys[num]];
-        return {value: sliceWidth, color:color};
+        var color = COLORS[COLOR_KEYS[num]];
+        return {value: SLICE_PERC, color:color};
     } else {
-        return {value: sliceWidth, color:colors.empty};
+        return {value: SLICE_PERC, color:COLORS.empty};
     }
 }
 function renderCalendarGraph(json) {
@@ -141,33 +141,38 @@ function renderCalendarGraph(json) {
 
     json.calendar.forEach(function(data, i) {
         var ctx = el("c"+(offset+i)).getContext("2d");
-        new Chart(ctx).Pie(data,{showTooltips:false,segmentShowStroke:false});
+        new Chart(ctx).Pie(data,{
+            showTooltips:false,
+            segmentShowStroke:false,
+            animation:false
+        });
     });
-    graphs.forEach(function(graphId) {
-        el(graphId+"-pre").style.backgroundColor = colors[graphId+"Pre"];
-        el(graphId+"-post").style.backgroundColor = colors[graphId+"Post"];
+    GRAPH_IDS.forEach(function(graphId) {
+        el(graphId+"-pre").style.backgroundColor = COLORS[graphId+"Pre"];
+        el(graphId+"-post").style.backgroundColor = COLORS[graphId+"Post"];
     });
 }
 function colorActivityGraphLegend(graphId) {
     var before = el(graphId).parentNode.querySelector(".pre");
-    before.style.backgroundColor = colors[graphId+"Pre"];
+    before.style.backgroundColor = COLORS[graphId+"Pre"];
 
     var after = el(graphId).parentNode.querySelector(".post");
-    after.style.backgroundColor = colors[graphId+"Post"];
+    after.style.backgroundColor = COLORS[graphId+"Post"];
 }
 function renderActivityGraph(json) {
-    graphs.forEach(function(graphId, i) {
+    GRAPH_IDS.forEach(function(graphId, i) {
         colorActivityGraphLegend(graphId);
 
-        var labels = json.activities[graphId].labels.slice(0,numDays);
-        var pre = json.activities[graphId].pre.slice(0,numDays);
-        var post = json.activities[graphId].post.slice(0,numDays);
+        var labels = json.activities[graphId].labels.slice(0,NUM_DAYS);
+        var pre = json.activities[graphId].pre.slice(0,NUM_DAYS);
+        var post = json.activities[graphId].post.slice(0,NUM_DAYS);
         var data = {labels: labels, datasets: [
-            {fillColor: colors[graphId+"Pre"], data: pre},
-            {fillColor: colors[graphId+"Post"], data: post}
+            {fillColor: COLORS[graphId+"Pre"], data: pre},
+            {fillColor: COLORS[graphId+"Post"], data: post}
         ]};
         var ctx = el(graphId).getContext("2d");
         new Chart(ctx).BarAlt(data, {
+            animation: false,
             barShowStroke: false,
             barValueSpacing: 1,
             barDatasetSpacing: 0,
@@ -182,16 +187,13 @@ function renderActivityGraph(json) {
     });
 }
 function sizeSquare(canvas) {
-    var width = (canvas.parentNode.clientWidth-10)
+    var width = (canvas.parentNode.clientWidth-10);
     canvas.style.width = canvas.style.height = width + "px";
 }
 function sizeWidth(canvas) {
     var width = (canvas.parentNode.clientWidth-20);
+    var height = (width/2.5) + ((document.body.clientWidth <= 360) ? 50 : 0);
     canvas.style.width = width + "px";
-    var height = (width/2.5);
-    if (document.body.clientWidth <= 360) {
-        height += 50;
-    }
     canvas.style.height = height + "px";
 }
 function iterateOverCanvases(selector, func) {
@@ -209,7 +211,6 @@ Chart.types.Bar.extend({
 
         // don't allow superclass to do this
         this.clear();
-        var func = this.clear;
         this.clear = function() {};
 
         var offsetTop = this.scale.calculateY(100);
@@ -225,7 +226,6 @@ Chart.types.Bar.extend({
         ctx.fillRect(0, offsetTop + adjHeight, width, 2);
 
         Chart.types.Bar.prototype.draw.apply(this, arguments);
-        this.clear = func;
     }
 });
 
@@ -246,11 +246,8 @@ window.display = function(sessionToken, startDate, endDate) {
     request.addEventListener("load", handleLoad);
     request.send();
 }
-function initNumDays() {
-    numDays = (document.body.clientWidth > 360) ? 30 : 14;
-}
 function init() {
-    initNumDays();
+    NUM_DAYS = (document.body.clientWidth > 360) ? 30 : 14;
     iterateOverCanvases("#calendar canvas", sizeSquare);
     iterateOverCanvases("#activities canvas", sizeWidth);
 }
@@ -262,3 +259,5 @@ window.onorientationchange = function() {
 
 init(); // don't delete this even when moving to server data, it's needed.
 displayGraph(normalizeJson({}));
+// REMOVEME
+document.body.style.opacity = "1.0";
