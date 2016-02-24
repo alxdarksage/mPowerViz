@@ -96,7 +96,7 @@
         </tr>
         </tbody>
     </table>
-    <!--'tapLeft','tapRight','walk','voice','balance'-->
+    <!--'tapLeft','tapRight','walk','voice','balance'
     <table id="calendar-legend">
         <tr>
             <td>
@@ -114,6 +114,17 @@
                 <span class="tab" id="voice-post"></span> Voice
                 <span class="tab" id="balance-pre"></span>
                 <span class="tab" id="balance-post"></span> Balance
+            </td>
+        </tr>
+    </table>-->
+    <table id="calendar-legend">
+        <tr>
+            <td>
+                <span class="tab" id="tapRight-pre"></span> Tapping
+                <span class="tab"></span>
+                <span class="tab" id="voice-pre"></span> Walking
+                <span class="tab"></span>
+                <span class="tab" id="balance-pre"></span> Voice
             </td>
         </tr>
     </table>
@@ -165,7 +176,7 @@
             <tr>
                 <td class="legend">
                     <div>Voice</div>
-                    <img src="voice.svg"/>
+                    <img class="bigger" src="voice.svg"/>
                 </td>
                 <td class="graph">
                     <canvas id="voice"></canvas>
@@ -175,7 +186,7 @@
             <tr>
                 <td class="legend">
                     <div>Balance</div>
-                    <img src="balance.svg"/>
+                    <img class="bigger" src="balance.svg"/>
                 </td>
                 <td class="graph">
                     <canvas id="balance"></canvas>
@@ -188,6 +199,7 @@
     <p class="disclaimer">mPower is for research use only and does not provide medical advice, diagnosis, or treatment. </p>
 </div>
 <script src="Chart.min.js"></script>
+<!--<script src="Chart-2.0.0-alpha3.js"></script>-->
 <script src="script.js"></script>
 </body>
 </html>

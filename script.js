@@ -19,6 +19,19 @@ var COLORS = {
      tremorPost: "#A9D7AA"
      */
 };
+var SHORT_COLORS = {
+    empty: "#f4f4f4",
+    tapLeftPre: "#54ABCC",
+    tapLeftPost: "#54ABCC",
+    tapRightPre: "#54ABCC",
+    tapRightPost: "#EDB64F",
+    walkPre: "#EDB64F",
+    walkPost: "#EDB64F",
+    voicePre: "#EDB64F",
+    voicePost: "#744696",
+    balancePre: "#744696",
+    balancePost: "#744696"
+}
 var COLOR_KEYS = Object.keys(COLORS);
 var FOUR_WEEKS = 1000*60*60*24*30;
 var ONE_DAY = 1000*60*60*24;
@@ -130,7 +143,7 @@ function normalizeJson(json) {
 }
 function measureToEntry(measure, num) {
     if (measure > .5) {
-        var color = COLORS[COLOR_KEYS[num]];
+        var color = SHORT_COLORS[COLOR_KEYS[num]];
         return {value: SLICE_PERC, color:color};
     } else {
         return {value: SLICE_PERC, color:COLORS.empty};
@@ -140,16 +153,30 @@ function renderCalendarGraph(json) {
     var offset = json.meta.offset;
 
     json.calendar.forEach(function(data, i) {
+        var result = data.filter(function(element) {
+            return (element.color !== "#f4f4f4");
+        });
+        for (var j = result.length; j < 10; j++) {
+            result.push({value:10, color:"#f4f4f4"});
+        }
+
         var ctx = el("c"+(offset+i)).getContext("2d");
-        new Chart(ctx).Pie(data,{
+        new Chart(ctx).Doughnut(result, {
             showTooltips:false,
             segmentShowStroke:false,
-            animation:false
+            animation:false,
+            percentageInnerCutout: 40
         });
     });
     GRAPH_IDS.forEach(function(graphId) {
-        el(graphId+"-pre").style.backgroundColor = COLORS[graphId+"Pre"];
-        el(graphId+"-post").style.backgroundColor = COLORS[graphId+"Post"];
+        var pre = el(graphId+"-pre");
+        if (pre) {
+            pre.style.backgroundColor = COLORS[graphId+"Pre"];
+        }
+        var post = el(graphId+"-post");
+        if (post) {
+            post.style.backgroundColor = COLORS[graphId+"Post"];
+        }
     });
 }
 function colorActivityGraphLegend(graphId) {
@@ -172,6 +199,7 @@ function renderActivityGraph(json) {
         ]};
         var ctx = el(graphId).getContext("2d");
         new Chart(ctx).BarAlt(data, {
+            scaleBeginAtZero: true,
             animation: false,
             barShowStroke: false,
             barValueSpacing: 1,
@@ -202,12 +230,12 @@ function iterateOverCanvases(selector, func) {
         func(canvases[i]);
     }
 }
-
 Chart.types.Bar.extend({
     name: "BarAlt",
     draw: function(){
         // the graph has padding at the top and the bottom that has to be calculated
         // to draw the bar corectly.
+        var ctx = this.chart.ctx;
 
         // don't allow superclass to do this
         this.clear();
@@ -218,17 +246,32 @@ Chart.types.Bar.extend({
         var height = Math.floor(this.chart.canvas.scrollHeight);
         var adjHeight = height - (height-this.scale.endPoint) - offsetTop;
 
-        var ctx = this.chart.ctx;
+        var minY = .35;
+        var maxY = .65;
+
+        var pixelRatio = (adjHeight/100);
+        var startY = Math.round(adjHeight * minY) * pixelRatio;
+        var barHeight = Math.round(adjHeight * (maxY-minY)) * pixelRatio;
+
         ctx.fillStyle = "#eee";
-        ctx.fillRect(0, offsetTop + (adjHeight/4), width, (adjHeight/2));
+        ctx.fillRect(0, offsetTop+startY, width, offsetTop+barHeight);
+
+        ctx.beginPath();
+        ctx.strokeWidth = 1;
+        ctx.strokeStyle = '#eee';
+        ctx.moveTo(0,offsetTop+adjHeight);
+        ctx.lineTo(0,offsetTop-0.5);
+        ctx.lineTo(width,offsetTop-0.5);
+        ctx.lineTo(width,adjHeight+offsetTop);
+        ctx.stroke();
 
         ctx.fillStyle = "black";
+        ctx.strokeWidth = 0;
         ctx.fillRect(0, offsetTop + adjHeight, width, 2);
 
         Chart.types.Bar.prototype.draw.apply(this, arguments);
     }
 });
-
 el("date").textContent = new Date().toLocaleDateString();
 
 window.display = function(sessionToken, startDate, endDate) {
