@@ -1,4 +1,4 @@
-if (document.location.hash === "c#pdf") {
+if (document.location.hash === "#pdf") {
     document.body.classList.add("showpdf");
 }
 
