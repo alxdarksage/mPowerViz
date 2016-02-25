@@ -27,6 +27,7 @@ var GRAPH_IDS = ['tap','gait','voice','balance'];
 var SLICE_PERC = 100/8; // The size of a piece of pie. 4 post/pre measures = 10 pie pieces
 var NUM_DAYS = 14; // Number of days to show on activity graph. We recalculate this on orientation change.
 var forEach = Array.prototype.forEach;
+var MONTHS = ["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 function el(id) {
     return document.getElementById(id);
@@ -63,7 +64,6 @@ function displayGraph(json) {
     window.data = json; // for reloads, hold this data in global scope
     renderCalendarGraph(json);
     renderActivityGraph(json);
-    colorLegends();
     loaded();
 }
 function loaded() {
@@ -93,7 +93,10 @@ function normalizeJson(array) {
             measureToEntry(measures, preMeasure, COLORS[graphId].pre);
             measureToEntry(measures, postMeasure, COLORS[graphId].pre);
         });
-        return measures.reverse();
+        return {
+            data: measures.reverse(),
+            date: dateString
+        };
     });
 
     var object = {};
@@ -104,14 +107,15 @@ function normalizeJson(array) {
         var thisDay = new Date(dateString);
         var thisDayString = (thisDay.getMonth()+1)+ "/" + (thisDay.getDate());
         GRAPH_IDS.forEach(function(graphId) {
+            var obj = object[graphId];
             var dayOfData = restructuredData[dateString][graphId];
             var preMeasure = (dayOfData.pre === "NA") ? 0 : 100-(dayOfData.pre * 100);
             var postMeasure = (dayOfData.post === "NA") ? 0 : 100-(dayOfData.post * 100);
-            object[graphId].pre.push(preMeasure);
-            object[graphId].post.push(postMeasure);
-            object[graphId].labels.push(thisDayString);
-            object[graphId].controlMin = dayOfData.controlMin;
-            object[graphId].controlMax = dayOfData.controlMax;
+            obj.pre.push(preMeasure);
+            obj.post.push(postMeasure);
+            obj.labels.push(thisDayString);
+            obj.controlMin = dayOfData.controlMin;
+            obj.controlMax = dayOfData.controlMax;
         });
     });
     data.activities = object;
@@ -124,15 +128,32 @@ function measureToEntry(measures, value, color) {
         measures.unshift({value: SLICE_PERC, color:COLORS.empty});
     }
 }
+
 function renderCalendarGraph(json) {
     // We don't need today's offset, we need the most recent day of data's offset.
     var offset = json.meta.offset;
 
+    var lastMonth = null;
     json.calendar.forEach(function(data, i) {
-        var ctx = el("c"+(offset+i)).getContext("2d");
-        new Chart(ctx).Doughnut(data, {
+        var canvas = el("c"+(offset+i-1));
+        
+        var today = new Date(data.date);
+        var month = parseInt(today.toISOString().split("-")[1], 10);
+        var dayOfMonth = parseInt(today.toISOString().split("-")[2], 10);
+        console.log(data.date, "-", MONTHS[month], "-", today.toISOString());
+        
+        if (month !== lastMonth || i === json.calendar.length-1) {
+            canvas.nextSibling.textContent = MONTHS[month] + " " + dayOfMonth;
+        } else {
+            canvas.nextSibling.textContent = dayOfMonth;
+        }
+        lastMonth = month;
+
+        canvas.title = data.date;
+        var ctx = canvas.getContext("2d");
+        new Chart(ctx).Doughnut(data.data, {
             showTooltips:false,
-            segmentShowStroke:true,
+            segmentShowStroke:false,
             animation:false,
             percentageInnerCutout: 30
         });
@@ -168,18 +189,8 @@ function renderActivityGraph(json) {
         });
     });
 }
-function colorLegends() {
-    GRAPH_IDS.forEach(function(graphId) {
-        forEach.call(document.body.querySelectorAll("."+graphId+"-pre"), function(el) {
-            el.style.backgroundColor = COLORS[graphId].pre;
-        });
-        forEach.call(document.body.querySelectorAll("."+graphId+"-post"), function(el) {
-            el.style.backgroundColor = COLORS[graphId].post;
-        });
-    });
-}
 function sizeSquare(canvas) {
-    var width = (canvas.parentNode.clientWidth-10);
+    var width = (canvas.parentNode.clientWidth-2);
     canvas.style.width = canvas.style.height = width + "px";
 }
 function sizeWidth(canvas) {
@@ -240,7 +251,6 @@ Chart.types.Bar.extend({
         Chart.types.Bar.prototype.draw.apply(this, arguments);
     }
 });
-
 el("date").textContent = new Date().toLocaleDateString();
 
 window.display = function(sessionToken, startDate, endDate) {

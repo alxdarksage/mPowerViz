@@ -49,67 +49,59 @@
             </tr>
         </thead>
         <tbody>
-        <tr>
-            <td><canvas id="c34"></canvas></td>
-            <td><canvas id="c33"></canvas></td>
-            <td><canvas id="c32"></canvas></td>
-            <td><canvas id="c31"></canvas></td>
-            <td><canvas id="c30"></canvas></td>
-            <td><canvas id="c29"></canvas></td>
-            <td><canvas id="c28"></canvas></td>
-        </tr>
-        <tr>
-            <td><canvas id="c27"></canvas></td>
-            <td><canvas id="c26"></canvas></td>
-            <td><canvas id="c25"></canvas></td>
-            <td><canvas id="c24"></canvas></td>
-            <td><canvas id="c23"></canvas></td>
-            <td><canvas id="c22"></canvas></td>
-            <td><canvas id="c21"></canvas></td>
-        </tr>
-        <tr>
-            <td><canvas id="c20"></canvas></td>
-            <td><canvas id="c19"></canvas></td>
-            <td><canvas id="c18"></canvas></td>
-            <td><canvas id="c17"></canvas></td>
-            <td><canvas id="c16"></canvas></td>
-            <td><canvas id="c15"></canvas></td>
-            <td><canvas id="c14"></canvas></td>
-        </tr>
-        <tr>
-            <td><canvas id="c13"></canvas></td>
-            <td><canvas id="c12"></canvas></td>
-            <td><canvas id="c11"></canvas></td>
-            <td><canvas id="c10"></canvas></td>
-            <td><canvas id="c9"></canvas></td>
-            <td><canvas id="c8"></canvas></td>
-            <td><canvas id="c7"></canvas></td>
-        </tr>
-        <tr>
-            <td><canvas id="c6"></canvas></td>
-            <td><canvas id="c5"></canvas></td>
-            <td><canvas id="c4"></canvas></td>
-            <td><canvas id="c3"></canvas></td>
-            <td><canvas id="c2"></canvas></td>
-            <td><canvas id="c1"></canvas></td>
-            <td><canvas id="c0"></canvas></td>
-        </tr>
+            <tr>
+                <td><canvas id="c34"></canvas><span></span></td>
+                <td><canvas id="c33"></canvas><span></span></td>
+                <td><canvas id="c32"></canvas><span></span></td>
+                <td><canvas id="c31"></canvas><span></span></td>
+                <td><canvas id="c30"></canvas><span></span></td>
+                <td><canvas id="c29"></canvas><span></span></td>
+                <td><canvas id="c28"></canvas><span></span></td>
+            </tr>
+            <tr>
+                <td><canvas id="c27"></canvas><span></span></td>
+                <td><canvas id="c26"></canvas><span></span></td>
+                <td><canvas id="c25"></canvas><span></span></td>
+                <td><canvas id="c24"></canvas><span></span></td>
+                <td><canvas id="c23"></canvas><span></span></td>
+                <td><canvas id="c22"></canvas><span></span></td>
+                <td><canvas id="c21"></canvas><span></span></td>
+            </tr>
+            <tr>
+                <td><canvas id="c20"></canvas><span></span></td>
+                <td><canvas id="c19"></canvas><span></span></td>
+                <td><canvas id="c18"></canvas><span></span></td>
+                <td><canvas id="c17"></canvas><span></span></td>
+                <td><canvas id="c16"></canvas><span></span></td>
+                <td><canvas id="c15"></canvas><span></span></td>
+                <td><canvas id="c14"></canvas><span></span></td>
+            </tr>
+            <tr>
+                <td><canvas id="c13"></canvas><span></span></td>
+                <td><canvas id="c12"></canvas><span></span></td>
+                <td><canvas id="c11"></canvas><span></span></td>
+                <td><canvas id="c10"></canvas><span></span></td>
+                <td><canvas id="c9"></canvas><span></span></td>
+                <td><canvas id="c8"></canvas><span></span></td>
+                <td><canvas id="c7"></canvas><span></span></td>
+            </tr>
+            <tr>
+                <td><canvas id="c6"></canvas><span></span></td>
+                <td><canvas id="c5"></canvas><span></span></td>
+                <td><canvas id="c4"></canvas><span></span></td>
+                <td><canvas id="c3"></canvas><span></span></td>
+                <td><canvas id="c2"></canvas><span></span></td>
+                <td><canvas id="c1"></canvas><span></span></td>
+                <td><canvas id="c0"></canvas><span></span></td>
+            </tr>
         </tbody>
     </table>
-    <table id="calendar-legend">
-        <tr>
-            <td>
-                <span class="tab"></span>
-                <span class="tab balance-pre"></span> Balance
-                <span class="tab"></span>
-                <span class="tab voice-pre"></span> Voice
-                <span class="tab"></span>
-                <span class="tab gait-pre"></span> Gait
-                <span class="tab"></span>
-                <span class="tab tap-pre"></span> Tapping
-            </td>
-        </tr>
-    </table>
+    <div class="legend">
+        <div class="balance-pre">Balance</div>
+        <div class="voice-pre">Voice</div>
+        <div class="gait-pre">Gait</div>
+        <div class="tap-pre">Tapping</div>
+    </div>
 
     <h3>Activity Plots</h3>
 
@@ -126,54 +118,54 @@
     <table id="activities">
         <tbody>
             <tr>
-                <td class="legend">
+                <td class="side-legend">
                     <div>Tapping</div>
                     <img src="svg/tap.svg"/>
                 </td>
                 <td class="graph">
                     <canvas id="tap"></canvas>
-                    <div>
-                        <span class="tab tap-pre"></span> Off-medication 
-                        <span class="tab tap-post"></span> On-medication
+                    <div class="legend">
+                        <div class="tap-pre">Off-medication</div> 
+                        <div class="tap-post">On-medication</div>
                     </div>
                 </td>
             </tr>
             <tr>
-                <td class="legend">
+                <td class="side-legend">
                     <div>Walking</div>
                     <img src="svg/walk.svg"/>
                 </td>
                 <td class="graph">
                     <canvas id="gait"></canvas>
-                    <div>
-                        <span class="tab gait-pre"></span> Off-medication 
-                        <span class="tab gait-post"></span> On-medication
+                    <div class="legend">
+                        <div class="gait-pre">Off-medication</div> 
+                        <div class="gait-post">On-medication</div>
                     </div>
                 </td>
             </tr>
             <tr>
-                <td class="legend">
+                <td class="side-legend">
                     <div>Voice</div>
                     <img class="bigger" src="svg/voice.svg"/>
                 </td>
                 <td class="graph">
                     <canvas id="voice"></canvas>
-                    <div>
-                        <span class="tab voice-pre"></span> Off-medication 
-                        <span class="tab voice-post"></span> On-medication
+                    <div class="legend">
+                        <div class="voice-pre">Off-medication</div> 
+                        <div class="voice-post">On-medication</div>
                     </div>
                 </td>
             </tr>
             <tr>
-                <td class="legend">
+                <td class="side-legend">
                     <div>Balance</div>
                     <img class="bigger" src="svg/balance.svg"/>
                 </td>
                 <td class="graph">
                     <canvas id="balance"></canvas>
-                    <div>
-                        <span class="tab balance-pre"></span> Off-medication 
-                        <span class="tab balance-post"></span> On-medication
+                    <div class="legend">
+                        <div class="balance-pre">Off-medication</div> 
+                        <div class="balance-post">On-medication</div>
                     </div>
                 </td>
             </tr>
