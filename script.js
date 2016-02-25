@@ -3,7 +3,7 @@ if (document.location.hash === "#pdf") {
 }
 
 var COLORS = {
-    empty: "#ffffff"/*"#f4f4f4"*/,
+    empty: "#f4f4f4",
     tap: {
         pre: "#E9406A",
         post: "#F398AF"
@@ -21,7 +21,6 @@ var COLORS = {
         post: "#B49CC6"
     }
 };
-var COLOR_KEYS = Object.keys(COLORS);
 var FOUR_WEEKS = 1000*60*60*24*30;
 var ONE_DAY = 1000*60*60*24;
 var GRAPH_IDS = ['tap','gait','voice','balance'];
@@ -61,6 +60,7 @@ function handleLoad(response) {
 function displayGraph(json) {
     console.debug("displayGraph",json);
     json = normalizeJson(json);
+    window.data = json; // for reloads, hold this data in global scope
     renderCalendarGraph(json);
     renderActivityGraph(json);
     colorLegends();
@@ -72,7 +72,6 @@ function loaded() {
 }
 function normalizeJson(array) {
     var data = {meta:{now:new Date()}};
-    data.meta.offset = 6 - data.meta.now.getDay();
 
     var restructuredData = {};
     array.forEach(function(object) {
@@ -82,26 +81,19 @@ function normalizeJson(array) {
 
     // In reverse chronological order...
     var dateStrings = Object.keys(restructuredData).sort().reverse();
+    data.meta.offset = (6 - new Date(dateStrings[0]).getDay());
 
     // Calendar values.
     data.calendar = dateStrings.map(function(dateString) {
         var dayOfData = restructuredData[dateString];
         var measures = [];
-        for (var i=0; i < GRAPH_IDS.length; i++) {
-            var graphId = GRAPH_IDS[i];
+        GRAPH_IDS.forEach(function(graphId) {
             var preMeasure = dayOfData[graphId].pre;
             var postMeasure = dayOfData[graphId].post;
-            // REMOVEME
-            preMeasure = Math.random();
-            postMeasure = Math.random();
-            
             measureToEntry(measures, preMeasure, COLORS[graphId].pre);
             measureToEntry(measures, postMeasure, COLORS[graphId].pre);
-        }
-        for (var i=0; i < (8-measures.length); i++) {
-            measures.push({value: SLICE_PERC, color:COLORS.empty});
-        }
-        return measures;
+        });
+        return measures.reverse();
     });
 
     var object = {};
@@ -113,12 +105,8 @@ function normalizeJson(array) {
         var thisDayString = (thisDay.getMonth()+1)+ "/" + (thisDay.getDate());
         GRAPH_IDS.forEach(function(graphId) {
             var dayOfData = restructuredData[dateString][graphId];
-            var preMeasure = (dayOfData.pre === "NA") ? 0 : (dayOfData.pre * 100);
-            var postMeasure = (dayOfData.post === "NA") ? 0 : (dayOfData.post * 100);
-            // REMOVEME
-            preMeasure = Math.random() * 100;
-            postMeasure = Math.random() * 100;
-            
+            var preMeasure = (dayOfData.pre === "NA") ? 0 : 100-(dayOfData.pre * 100);
+            var postMeasure = (dayOfData.post === "NA") ? 0 : 100-(dayOfData.post * 100);
             object[graphId].pre.push(preMeasure);
             object[graphId].post.push(postMeasure);
             object[graphId].labels.push(thisDayString);
@@ -127,14 +115,13 @@ function normalizeJson(array) {
         });
     });
     data.activities = object;
-
-    window.data = data;
-    console.log(data);
     return data;
 }
 function measureToEntry(measures, value, color) {
-    if (value > 0.4) {
+    if (value !== "NA") {
         measures.push({value: SLICE_PERC, color:color});
+    } else {
+        measures.unshift({value: SLICE_PERC, color:COLORS.empty});
     }
 }
 function renderCalendarGraph(json) {
@@ -230,7 +217,7 @@ Chart.types.Bar.extend({
         var maxY = this.options.controlMax; // .75;
 
         // normal population range bar (light bar in background)
-        var startY = offsetTop + (graphHeight * minY);
+        var startY = offsetTop + (graphHeight-(graphHeight * maxY));
         var endY = graphHeight * (maxY-minY);
         context.fillStyle = "#eee";
         context.fillRect(0, startY, width, endY);
@@ -273,7 +260,7 @@ window.display = function(sessionToken, startDate, endDate) {
 }
 window.onorientationchange = function() {
     init();
-    displayGraph(window.data);
+    displayGraph(testData);
 };
 
 init(); // don't delete this even when moving to server data, it's needed.

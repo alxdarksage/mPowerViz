@@ -99,13 +99,14 @@
     <table id="calendar-legend">
         <tr>
             <td>
-                <span class="tab tap-pre"></span> Tapping
                 <span class="tab"></span>
-                <span class="tab gait-pre"></span> Gait
+                <span class="tab balance-pre"></span> Balance
                 <span class="tab"></span>
                 <span class="tab voice-pre"></span> Voice
                 <span class="tab"></span>
-                <span class="tab balance-pre"></span> Balance
+                <span class="tab gait-pre"></span> Gait
+                <span class="tab"></span>
+                <span class="tab tap-pre"></span> Tapping
             </td>
         </tr>
     </table>
@@ -126,8 +127,8 @@
         <tbody>
             <tr>
                 <td class="legend">
-                    <div>Tapping<br>Left</div>
-                    <img class="flip" src="tap.svg"/>
+                    <div>Tapping</div>
+                    <img src="svg/tap.svg"/>
                 </td>
                 <td class="graph">
                     <canvas id="tap"></canvas>
@@ -140,7 +141,7 @@
             <tr>
                 <td class="legend">
                     <div>Walking</div>
-                    <img src="walk.svg"/>
+                    <img src="svg/walk.svg"/>
                 </td>
                 <td class="graph">
                     <canvas id="gait"></canvas>
@@ -153,7 +154,7 @@
             <tr>
                 <td class="legend">
                     <div>Voice</div>
-                    <img class="bigger" src="voice.svg"/>
+                    <img class="bigger" src="svg/voice.svg"/>
                 </td>
                 <td class="graph">
                     <canvas id="voice"></canvas>
@@ -166,7 +167,7 @@
             <tr>
                 <td class="legend">
                     <div>Balance</div>
-                    <img class="bigger" src="balance.svg"/>
+                    <img class="bigger" src="svg/balance.svg"/>
                 </td>
                 <td class="graph">
                     <canvas id="balance"></canvas>
@@ -183,7 +184,7 @@
         or treatment. </p>
 </div>
 <script src="test-data.js"></script>
-<script src="Chart.min.js"></script>
+<script src="chart/Chart.min.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
