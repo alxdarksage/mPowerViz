@@ -240,8 +240,8 @@ Chart.types.Bar.extend({
         context.strokeWidth = 1;
         context.strokeStyle = '#eee';
         context.moveTo(0,offsetTop+graphHeight);
-        context.lineTo(0,offsetTop);
-        context.lineTo(width,offsetTop);
+        context.lineTo(0,offsetTop-0.5);
+        context.lineTo(width,offsetTop-0.5);
         context.lineTo(width,graphHeight+offsetTop);
         context.stroke();
 
