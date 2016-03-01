@@ -4,16 +4,9 @@
 }
 html {
     font: 62.5% Helvetica Neue, sans-serif;
-    /*font: 2.4vw Helvetica Neue, sans-serif;*/
 }
-/*
-::-webkit-scrollbar { 
-    display: none; 
-}
-*/
 body {
     margin: 0;
-    opacity: 0.0;
     transition: opacity .5s ease-in-out;
     -webkit-transition: opacity .5s ease-in-out;
 }
@@ -47,7 +40,32 @@ table {
 .showpdf .pdf {
     display: block!important;
 }
+#loading, #nodata {
+    opacity: 0.0;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    transition: opacity .5s ease-in-out;
+    -webkit-transition: opacity .5s ease-in-out;
+}
+#loading {
+    opacity: 1.0;
+}
+#nodata div p {
+    margin: 0;
+    padding: 2rem;
+}
+#nodata p:first-child {
+    font-size: 34px;
+    padding-bottom: 0;
+}
 #content {
+    opacity: 0.0;
     padding: 1.5rem;
 }
 #calendar {

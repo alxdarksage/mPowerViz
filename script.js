@@ -25,8 +25,7 @@ var FOUR_WEEKS = 1000*60*60*24*30;
 var ONE_DAY = 1000*60*60*24;
 var GRAPH_IDS = ['tap','gait','voice','balance'];
 var SLICE_PERC = 100/8; // The size of a piece of pie. 4 post/pre measures = 10 pie pieces
-var NUM_DAYS = 14; // Number of days to show on activity graph. We recalculate this on orientation change.
-var forEach = Array.prototype.forEach;
+var NUM_DAYS; // Number of days to show on activity graph. We calculate this in init() (& on orientation change)
 var MONTHS = ["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 function el(id) {
@@ -39,15 +38,26 @@ function fourWeeksAgoISOString() {
     return new Date(new Date().getTime()-FOUR_WEEKS).toISOString().split("T")[0];
 }
 function handleError(message) {
-    window.displayError = message;
     console.error(message);
 }
 function handleAbort() {
     handleError('Request aborted.');
 }
+function displayNoData() {
+    el("loading").style.opacity = "0.0";
+    el("content").style.opacity = "0.0";
+    setTimeout(function() {
+        el("nodata").style.opacity = "1.0";    
+    }, 500);
+}
 function handleLoad(response) {
     var status = response.currentTarget.status;
-    var json = JSON.parse(response.currentTarget.responseText);
+    var text = response.currentTarget.responseText;
+    if (text === "" || text === "{}" || text === "null") {
+        displayNoData();
+        return;
+    }
+    var json = JSON.parse(text);
     console.debug("handleLoad",json);
     switch(status) {
         case 200:
@@ -67,8 +77,11 @@ function displayGraph(json) {
     loaded();
 }
 function loaded() {
-    window.displayLoaded = true;
-    document.body.style.opacity = "1.0";
+    el("nodata").style.opacity = "0.0";
+    el("loading").style.opacity = "0.0";
+    setTimeout(function() {
+        el("content").style.opacity = "1.0";    
+    }, 500);
 }
 function normalizeJson(array) {
     var data = {meta:{now:new Date()}};
@@ -128,7 +141,15 @@ function measureToEntry(measures, value, color) {
         measures.unshift({value: SLICE_PERC, color:COLORS.empty});
     }
 }
-
+function parseDateString(date) {
+    var dateObj = new Date(date);
+    var isoComponents = dateObj.toISOString().split("-");
+    return {
+        month: parseInt(isoComponents[1], 10),
+        dayOfMonth: parseInt(isoComponents[2], 10),
+        title: dateObj.toUTCString().replace("00:00:00 ","")
+    };
+}
 function renderCalendarGraph(json) {
     // We don't need today's offset, we need the most recent day of data's offset.
     var offset = json.meta.offset;
@@ -137,19 +158,16 @@ function renderCalendarGraph(json) {
     json.calendar.forEach(function(data, i) {
         var canvas = el("c"+(offset+i-1));
         
-        var today = new Date(data.date);
-        var month = parseInt(today.toISOString().split("-")[1], 10);
-        var dayOfMonth = parseInt(today.toISOString().split("-")[2], 10);
-        console.log(data.date, "-", MONTHS[month], "-", today.toISOString());
-        
-        if (month !== lastMonth || i === json.calendar.length-1) {
-            canvas.nextSibling.textContent = MONTHS[month] + " " + dayOfMonth;
+        var comps = parseDateString(data.date);
+        if (comps.month !== lastMonth || i === json.calendar.length-1) {
+            canvas.nextSibling.textContent = (MONTHS[comps.month] + " " + comps.dayOfMonth);
         } else {
-            canvas.nextSibling.textContent = dayOfMonth;
+            canvas.nextSibling.textContent = comps.dayOfMonth;
         }
-        lastMonth = month;
-
-        canvas.title = data.date;
+        lastMonth = comps.month;
+        
+        canvas.title = comps.title;
+            
         var ctx = canvas.getContext("2d");
         new Chart(ctx).Doughnut(data.data, {
             showTooltips:false,
@@ -161,11 +179,12 @@ function renderCalendarGraph(json) {
 }
 function renderActivityGraph(json) {
     GRAPH_IDS.forEach(function(graphId, i) {
-        var labels = json.activities[graphId].labels.slice(0,NUM_DAYS);
-        var pre = json.activities[graphId].pre.slice(0,NUM_DAYS);
-        var post = json.activities[graphId].post.slice(0,NUM_DAYS);
-        var controlMin = json.activities[graphId].controlMin;
-        var controlMax = json.activities[graphId].controlMax;
+        var activity = json.activities[graphId];
+        var labels = activity.labels.slice(0,NUM_DAYS);
+        var pre = activity.pre.slice(0,NUM_DAYS);
+        var post = activity.post.slice(0,NUM_DAYS);
+        var controlMin = activity.controlMin;
+        var controlMax = activity.controlMax;
         var data = {labels: labels, datasets: [
             {fillColor: COLORS[graphId].pre, data: pre},
             {fillColor: COLORS[graphId].post, data: post}
@@ -254,6 +273,14 @@ Chart.types.Bar.extend({
 el("date").textContent = new Date().toLocaleDateString();
 
 window.display = function(sessionToken, startDate, endDate) {
+    if (sessionToken === "aaa") {
+        displayGraph(testData);
+        return;
+    } else if (sessionToken === "bbb") {
+        displayNoData();
+        return;
+    }
+    
     startDate = startDate || fourWeeksAgoISOString();
     endDate = endDate || nowISOString();
 
@@ -272,7 +299,4 @@ window.onorientationchange = function() {
     init();
     displayGraph(testData);
 };
-
-init(); // don't delete this even when moving to server data, it's needed.
-displayGraph(testData);
-document.body.style.opacity = "1.0"; // REMOVEME
+init();
