@@ -51,6 +51,8 @@ function displayNoData() {
     }, 500);
 }
 function handleLoad(response) {
+    console.debug("handleLoad",response);
+    
     var status = response.currentTarget.status;
     var text = response.currentTarget.responseText;
     if (text === "" || text === "{}" || text === "null") {
@@ -58,7 +60,6 @@ function handleLoad(response) {
         return;
     }
     var json = JSON.parse(text);
-    console.debug("handleLoad",json);
     switch(status) {
         case 200:
             return displayGraph(json);
