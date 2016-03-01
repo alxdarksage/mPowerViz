@@ -38,7 +38,7 @@ function fourWeeksAgoISOString() {
     return new Date(new Date().getTime()-FOUR_WEEKS).toISOString().split("T")[0];
 }
 function handleError(message) {
-    console.error(message);
+    alert(message);
 }
 function handleAbort() {
     handleError('Request aborted.');
@@ -47,6 +47,7 @@ function displayNoData() {
     el("loading").style.opacity = "0.0";
     el("content").style.opacity = "0.0";
     setTimeout(function() {
+        el("content").style.display = "none";
         el("nodata").style.opacity = "1.0";    
     }, 500);
 }
@@ -81,25 +82,20 @@ function loaded() {
     el("nodata").style.opacity = "0.0";
     el("loading").style.opacity = "0.0";
     setTimeout(function() {
+        el("content").style.height = "auto";
         el("content").style.opacity = "1.0";    
     }, 500);
 }
-function normalizeJson(array) {
+function normalizeJson(response) {
     var data = {meta:{now:new Date()}};
 
-    var restructuredData = {};
-    array.forEach(function(object) {
-        var dateString = Object.keys(object)[0];
-        restructuredData[dateString] = object[dateString];
-    });
-
     // In reverse chronological order...
-    var dateStrings = Object.keys(restructuredData).sort().reverse();
+    var dateStrings = Object.keys(response).sort().reverse();
     data.meta.offset = (6 - new Date(dateStrings[0]).getDay());
 
     // Calendar values.
     data.calendar = dateStrings.map(function(dateString) {
-        var dayOfData = restructuredData[dateString];
+        var dayOfData = response[dateString];
         var measures = [];
         GRAPH_IDS.forEach(function(graphId) {
             var preMeasure = dayOfData[graphId].pre;
@@ -122,7 +118,7 @@ function normalizeJson(array) {
         var thisDayString = (thisDay.getMonth()+1)+ "/" + (thisDay.getDate());
         GRAPH_IDS.forEach(function(graphId) {
             var obj = object[graphId];
-            var dayOfData = restructuredData[dateString][graphId];
+            var dayOfData = response[dateString][graphId];
             var preMeasure = (dayOfData.pre === "NA") ? 0 : 100-(dayOfData.pre * 100);
             var postMeasure = (dayOfData.post === "NA") ? 0 : 100-(dayOfData.post * 100);
             obj.pre.push(preMeasure);

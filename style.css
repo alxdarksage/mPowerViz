@@ -7,8 +7,6 @@ html {
 }
 body {
     margin: 0;
-    transition: opacity .5s ease-in-out;
-    -webkit-transition: opacity .5s ease-in-out;
 }
 h2, h3 {
     margin: 0;
@@ -58,15 +56,18 @@ table {
 }
 #nodata div p {
     margin: 0;
-    padding: 2rem;
+    padding: 1rem;
 }
 #nodata p:first-child {
-    font-size: 30px;
-    padding-bottom: 0;
+    font-size: 28px;
 }
 #content {
     opacity: 0.0;
+    height: 0;
+    overflow: hidden;
     padding: 1.5rem;
+    transition: opacity .5s ease-in-out;
+    -webkit-transition: opacity .5s ease-in-out;
 }
 #calendar {
     margin: 1.5rem 0 .5rem 0;
