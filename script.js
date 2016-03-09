@@ -27,7 +27,20 @@ var GRAPH_IDS = ['tap','gait','voice','balance'];
 var SLICE_PERC = 100/8; // The size of a piece of pie. 4 post/pre measures = 10 pie pieces
 var NUM_DAYS; // Number of days to show on activity graph. We calculate this in init() (& on orientation change)
 var MONTHS = ["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-
+var SCREENS = ["nodata","loading","content","error"];
+var NO_DATA = {
+    "tap":{"pre":"NA","post":"NA","controlMin":0,"controlMax":1},
+    "voice":{"pre":"NA","post":"NA","controlMin":0,"controlMax":1},
+    "gait":{"pre":"NA","post":"NA","controlMin":0,"controlMax":1},
+    "balance":{"pre":"NA","post":"NA","controlMin":0,"controlMax":1}
+};
+/*
+var IFRAME = document.createElement("iframe");
+IFRAME.name = "postit";
+IFRAME.setAttribute("style", "position:absolute; left:-1000px; top:-100px;");
+IFRAME.width = IFRAME.height = "10px";
+document.body.appendChild(IFRAME);
+*/
 function el(id) {
     return document.getElementById(id);
 }
@@ -37,19 +50,32 @@ function nowISOString() {
 function fourWeeksAgoISOString() {
     return new Date(new Date().getTime()-FOUR_WEEKS).toISOString().split("T")[0];
 }
-function handleError(message) {
-    alert(message);
+
+function fadeIn(selected) {
+    SCREENS.forEach(function(id) {
+        el(id).style.opacity = "0.0";
+    });
+    setTimeout(function() {
+        SCREENS.forEach(function(id) {
+            el(id).style.height = "0";
+        });
+        el(selected).style.height = "auto";
+        el(selected).style.opacity = "1.0";
+        // IFRAME.src = (selected === "content") ? "native://data-loaded" : "native://data-error";
+    }, 500);
 }
 function handleAbort() {
-    handleError('Request aborted.');
+    displayError('Request aborted.');
+}
+function displayError(message) {
+    fadeIn("error");
+    el("message").textContent = message;
 }
 function displayNoData() {
-    el("loading").style.opacity = "0.0";
-    el("content").style.opacity = "0.0";
-    setTimeout(function() {
-        el("content").style.display = "none";
-        el("nodata").style.opacity = "1.0";    
-    }, 500);
+    fadeIn("nodata");
+}
+function displayContent() {
+    fadeIn("content");
 }
 function handleLoad(response) {
     console.debug("handleLoad",response);
@@ -65,35 +91,49 @@ function handleLoad(response) {
         case 200:
             return displayGraph(json);
         case 412:
-            return handleError("User has not consented to participate in study.");
+            return displayError("User has not consented to participate in study.");
         default:
-            return handleError(json.message);
+            return displayError(json.message);
     }
 }
 function displayGraph(json) {
+    if (Object.keys(json).length === 0) {
+        displayNoData();
+        return;
+    }
     console.debug("displayGraph",json);
     json = normalizeJson(json);
     window.data = json; // for reloads, hold this data in global scope
     renderCalendarGraph(json);
     renderActivityGraph(json);
-    loaded();
-}
-function loaded() {
-    el("nodata").style.opacity = "0.0";
-    el("loading").style.opacity = "0.0";
-    setTimeout(function() {
-        el("content").style.height = "auto";
-        el("content").style.opacity = "1.0";    
-    }, 500);
+    displayContent();
 }
 function normalizeJson(response) {
     var data = {meta:{now:new Date()}};
 
     // In reverse chronological order...
     var dateStrings = Object.keys(response).sort().reverse();
-    data.meta.offset = (6 - new Date(dateStrings[0]).getDay());
+    var firstDate = new Date(dateStrings[dateStrings.length-1]+"T00:00:00.000Z");
+    var lastDate = new Date(dateStrings[0]+"T00:00:00.000Z");
+    
+    data.meta.offset = (6 - lastDate.getDay());
 
-    // Calendar values.
+    // Data that comes back is sparse. Need to repair object so each date in range exists.
+    // (fun!)
+    var i = 0; // prevent bad data from freezing browser
+    var lastDateString = lastDate.toISOString().split("T")[0];
+    var isoDateString = firstDate.toISOString().split("T")[0];
+    while(isoDateString !== lastDateString && (i++ < 50)) {
+        if (!response[isoDateString]) {
+            response[isoDateString] = NO_DATA;
+            dateStrings.push(isoDateString);
+        }
+        firstDate.setDate(firstDate.getDate()+1);
+        isoDateString = firstDate.toISOString().split("T")[0];
+    }
+    dateStrings.sort().reverse();
+    
+    // Calendar values. 
     data.calendar = dateStrings.map(function(dateString) {
         var dayOfData = response[dateString];
         var measures = [];
@@ -113,9 +153,10 @@ function normalizeJson(response) {
     GRAPH_IDS.forEach(function(graphId) {
         object[graphId] = {pre:[], post:[], labels:[]};
     });
+    dateStrings.sort();
     dateStrings.forEach(function(dateString) {
         var thisDay = new Date(dateString);
-        var thisDayString = (thisDay.getMonth()+1)+ "/" + (thisDay.getDate());
+        var thisDayString = toUTCDateString(dateString);
         GRAPH_IDS.forEach(function(graphId) {
             var obj = object[graphId];
             var dayOfData = response[dateString][graphId];
@@ -130,6 +171,10 @@ function normalizeJson(response) {
     });
     data.activities = object;
     return data;
+}
+function toUTCDateString(dateString) {
+    var parts = dateString.split("-");
+    return parseInt(parts[1]).toString() + "/" + parseInt(parts[2]).toString();
 }
 function measureToEntry(measures, value, color) {
     if (value !== "NA") {
@@ -271,11 +316,11 @@ el("date").textContent = new Date().toLocaleDateString();
 
 window.display = function(sessionToken, startDate, endDate) {
     if (sessionToken === "aaa") {
-        displayGraph(testData);
-        return;
+        return displayGraph(testData);
     } else if (sessionToken === "bbb") {
-        displayNoData();
-        return;
+        return displayNoData();
+    } else if (sessionToken === "ccc") {
+        return displayError("This was an error");
     }
     
     startDate = startDate || fourWeeksAgoISOString();
@@ -294,6 +339,14 @@ window.display = function(sessionToken, startDate, endDate) {
 }
 window.onorientationchange = function() {
     init();
-    displayGraph(testData);
+    if (window.data) {
+        displayGraph(window.data);    
+    }
 };
+window.addEventListener("resize", function() {
+    init();
+    if (window.data) {
+        displayGraph(window.data);    
+    }
+}, true);
 init();

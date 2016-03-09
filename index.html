@@ -17,6 +17,13 @@
         <p>Try using mPower daily for about 2 weeks.</p>
     </div>
 </div>
+<div id="error">
+    <div>
+        <p>Sorry!</p>
+        <p>There has been an error:</p>
+        <p>&ldquo;<span id="message"></span>&rdquo;</p>
+    </div>
+</div>
 <div id="content">
     <h2>mPower Monthly Report</h2>
 
@@ -37,10 +44,10 @@
 
     <h3>How many activities did you complete?</h3>
 
-    <p class="pdf">The calendar graph below shows whether or not you completed the daily activities pre and post 
-        medication. A colored pie piece means you completed the task. Lighter colors represent tasks pre-medication. 
-        The darker colors represent task post-medication. The more you do the more colorful your calendar looks. This 
-        view may help you see patterns of when you hit your activity goals.</p>
+    <p class="pdf">The calendar graph below shows whether or not you completed the daily activities. A colored pie 
+        piece means you completed the task up to two times, once before medication and once after. The more you do, the 
+        fuller each day's pie chart will be, and the more colorful your calendar will look. This view may help you see 
+        patterns of when you hit your activity goals.</p>
 
     <table id="calendar">
         <thead>
@@ -117,9 +124,10 @@
         for the past 30 days. Because of the normalization and selection of scores these plots may be different
         from those shown on the app dashboard.</p>
 
-    <p class="pdf">The horizontal line indicates the average scores of participants in your age group who do not have 
-        PD. Activity scores vary from person to person. Some dopaminergic medications can boost the activity score.
-        Good restful sleep and other factors can affect performance and alertness.</p>
+    <p class="pdf">The horizontal gray bar indicates the average scores of participants in your age group who do not 
+        have PD. Higher scores on the bar chart indicate better performance of the tasks. Activity scores vary from 
+        person to person. Some dopaminergic medications can boost the activity score. Good restful sleep and other 
+        factors can affect performance and alertness.</p>
     
     <table id="activities">
         <tbody>
@@ -181,6 +189,7 @@
     <p class="disclaimer">mPower is for research use only and does not provide medical advice, diagnosis, 
         or treatment. </p>
 </div>
+<script>var testData = {};</script>
 <script src="chart/Chart.min.js"></script>
 <script src="script.js"></script>
 </body>

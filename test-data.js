@@ -25,6 +25,7 @@ var testData = {
             "controlMax":0.480214082828355
         }
     },
+    /*
     "2015-04-03":{  
         "tap":{  
             "pre":"NA",
@@ -51,6 +52,7 @@ var testData = {
             "controlMax":0.480214082828355
         }
     },
+    */
     "2015-04-04":{  
         "tap":{  
             "pre":"NA",
@@ -180,7 +182,7 @@ var testData = {
             "controlMin":0,
             "controlMax":0.480214082828355
         }
-    },
+    },/*
     "2015-04-09":{  
         "tap":{  
             "pre":0.110955365054742,
@@ -206,7 +208,7 @@ var testData = {
             "controlMin":0,
             "controlMax":0.480214082828355
         }
-    },
+    },*/
     "2015-04-10":{  
         "tap":{  
             "pre":"NA",

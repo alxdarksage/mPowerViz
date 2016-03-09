@@ -38,7 +38,7 @@ table {
 .showpdf .pdf {
     display: block!important;
 }
-#loading, #nodata {
+#loading, #nodata, #error {
     opacity: 0.0;
     align-items: center;
     justify-content: center;
@@ -54,11 +54,11 @@ table {
 #loading {
     opacity: 1.0;
 }
-#nodata div p {
+#nodata div p, #error div p {
     margin: 0;
     padding: 1rem;
 }
-#nodata p:first-child {
+#nodata p:first-child, #error p:first-child {
     font-size: 28px;
 }
 #content {
