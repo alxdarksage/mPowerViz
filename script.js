@@ -29,18 +29,11 @@ var NUM_DAYS; // Number of days to show on activity graph. We calculate this in 
 var MONTHS = ["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 var SCREENS = ["nodata","loading","content","error"];
 var NO_DATA = {
-    "tap":{"pre":"NA","post":"NA","controlMin":0,"controlMax":1},
-    "voice":{"pre":"NA","post":"NA","controlMin":0,"controlMax":1},
-    "gait":{"pre":"NA","post":"NA","controlMin":0,"controlMax":1},
-    "balance":{"pre":"NA","post":"NA","controlMin":0,"controlMax":1}
+    "tap":{"pre":"NA","post":"NA","controlMin":0,"controlMax":0},
+    "voice":{"pre":"NA","post":"NA","controlMin":0,"controlMax":0},
+    "gait":{"pre":"NA","post":"NA","controlMin":0,"controlMax":0},
+    "balance":{"pre":"NA","post":"NA","controlMin":0,"controlMax":0}
 };
-/*
-var IFRAME = document.createElement("iframe");
-IFRAME.name = "postit";
-IFRAME.setAttribute("style", "position:absolute; left:-1000px; top:-100px;");
-IFRAME.width = IFRAME.height = "10px";
-document.body.appendChild(IFRAME);
-*/
 function el(id) {
     return document.getElementById(id);
 }
@@ -61,7 +54,6 @@ function fadeIn(selected) {
         });
         el(selected).style.height = "auto";
         el(selected).style.opacity = "1.0";
-        // IFRAME.src = (selected === "content") ? "native://data-loaded" : "native://data-error";
     }, 500);
 }
 function handleAbort() {
@@ -111,29 +103,25 @@ function displayGraph(json) {
 function normalizeJson(response) {
     var data = {meta:{now:new Date()}};
 
-    // In reverse chronological order...
-    var dateStrings = Object.keys(response).sort().reverse();
-    var firstDate = new Date(dateStrings[dateStrings.length-1]+"T00:00:00.000Z");
-    var lastDate = new Date(dateStrings[0]+"T00:00:00.000Z");
+    var startDate = fourWeeksAgoISOString();
+    var endDate = nowISOString();
     
-    data.meta.offset = (6 - lastDate.getDay());
-
-    // Data that comes back is sparse. Need to repair object so each date in range exists.
-    // (fun!)
-    var i = 0; // prevent bad data from freezing browser
-    var lastDateString = lastDate.toISOString().split("T")[0];
-    var isoDateString = firstDate.toISOString().split("T")[0];
-    while(isoDateString !== lastDateString && (i++ < 50)) {
-        if (!response[isoDateString]) {
-            response[isoDateString] = NO_DATA;
-            dateStrings.push(isoDateString);
-        }
-        firstDate.setDate(firstDate.getDate()+1);
-        isoDateString = firstDate.toISOString().split("T")[0];
+    var dateStrings = [startDate];
+    var date = new Date(startDate);
+    while(startDate !== endDate) {
+        date.setDate(date.getDate()+1);
+        startDate = date.toISOString().split("T")[0];
+        dateStrings.push(startDate);
     }
-    dateStrings.sort().reverse();
-    
+    dateStrings.forEach(function(dateString) {
+        if(!response[dateString]) {
+            response[dateString] = NO_DATA;
+        }
+    });
+    data.meta.offset = (6 - new Date(endDate).getDay());
+
     // Calendar values. 
+    dateStrings.sort().reverse();
     data.calendar = dateStrings.map(function(dateString) {
         var dayOfData = response[dateString];
         var measures = [];
@@ -197,8 +185,13 @@ function renderCalendarGraph(json) {
     var offset = json.meta.offset;
 
     var lastMonth = null;
-    json.calendar.forEach(function(data, i) {
+    json.calendar.slice(0,30).forEach(function(data, i) {
         var canvas = el("c"+(offset+i-1));
+        
+        if (canvas == null) {
+            console.log(i);
+            return;
+        }
         
         var comps = parseDateString(data.date);
         if (comps.month !== lastMonth || i === json.calendar.length-1) {
@@ -222,9 +215,9 @@ function renderCalendarGraph(json) {
 function renderActivityGraph(json) {
     GRAPH_IDS.forEach(function(graphId, i) {
         var activity = json.activities[graphId];
-        var labels = activity.labels.slice(0,NUM_DAYS);
-        var pre = activity.pre.slice(0,NUM_DAYS);
-        var post = activity.post.slice(0,NUM_DAYS);
+        var labels = activity.labels.slice(30-NUM_DAYS);
+        var pre = activity.pre.slice(30-NUM_DAYS);
+        var post = activity.post.slice(30-NUM_DAYS);
         var controlMin = activity.controlMin;
         var controlMax = activity.controlMax;
         var data = {labels: labels, datasets: [
@@ -267,7 +260,8 @@ function iterateOverCanvases(selector, func) {
     }
 }
 function init() {
-    NUM_DAYS = (document.body.clientWidth > 360) ? 30 : 14;
+    //NUM_DAYS = (document.body.clientWidth > 360) ? 30 : 14;
+    NUM_DAYS = 14;
     iterateOverCanvases("#calendar canvas", sizeSquare);
     iterateOverCanvases("#activities canvas", sizeWidth);
 }
@@ -314,7 +308,7 @@ Chart.types.Bar.extend({
 });
 el("date").textContent = new Date().toLocaleDateString();
 
-window.display = function(sessionToken, startDate, endDate) {
+window.display = function(sessionToken) {
     if (sessionToken === "aaa") {
         return displayGraph(testData);
     } else if (sessionToken === "bbb") {
@@ -323,8 +317,8 @@ window.display = function(sessionToken, startDate, endDate) {
         return displayError("This was an error");
     }
     
-    startDate = startDate || fourWeeksAgoISOString();
-    endDate = endDate || nowISOString();
+    var startDate = fourWeeksAgoISOString();
+    var endDate = nowISOString();
 
     var url = 'https://webservices.sagebridge.org/parkinson/visualization' +
             '?startDate='+startDate+'&endDate='+endDate;
