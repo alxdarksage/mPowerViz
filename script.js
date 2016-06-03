@@ -139,7 +139,7 @@ function normalizeJson(response) {
 
     var object = {};
     GRAPH_IDS.forEach(function(graphId) {
-        object[graphId] = {pre:[], post:[], labels:[]};
+        object[graphId] = {pre:[], post:[], controlMin: [], controlMax: [], labels:[]};
     });
     dateStrings.sort();
     dateStrings.forEach(function(dateString) {
@@ -152,13 +152,23 @@ function normalizeJson(response) {
             var postMeasure = (dayOfData.post === "NA") ? 0 : 100-(dayOfData.post * 100);
             obj.pre.push(preMeasure);
             obj.post.push(postMeasure);
+            obj.controlMin.push(dayOfData.controlMin);
+            obj.controlMax.push(dayOfData.controlMax);
             obj.labels.push(thisDayString);
-            obj.controlMin = dayOfData.controlMin;
-            obj.controlMax = dayOfData.controlMax;
         });
+    });
+    GRAPH_IDS.forEach(function(graphId) {
+        var obj = object[graphId];
+        obj.controlMin = seekToValue(obj, "min", "controlMin");
+        obj.controlMax = seekToValue(obj, "max", "controlMax");
     });
     data.activities = object;
     return data;
+}
+function seekToValue(activity, operator, field) {
+    return Math[operator].apply(Math, activity[field].filter(function(value) {
+        return value !== 0;
+    }));
 }
 function toUTCDateString(dateString) {
     var parts = dateString.split("-");
@@ -260,8 +270,7 @@ function iterateOverCanvases(selector, func) {
     }
 }
 function init() {
-    //NUM_DAYS = (document.body.clientWidth > 360) ? 30 : 14;
-    NUM_DAYS = 14;
+    NUM_DAYS = (document.body.clientWidth > 360) ? 30 : 14;
     iterateOverCanvases("#calendar canvas", sizeSquare);
     iterateOverCanvases("#activities canvas", sizeWidth);
 }
@@ -281,7 +290,7 @@ Chart.types.Bar.extend({
 
         var minY = this.options.controlMin; //.25;
         var maxY = this.options.controlMax; // .75;
-
+        
         // normal population range bar (light bar in background)
         var startY = offsetTop + (graphHeight-(graphHeight * maxY));
         var endY = graphHeight * (maxY-minY);
@@ -334,13 +343,19 @@ window.display = function(sessionToken) {
 window.onorientationchange = function() {
     init();
     if (window.data) {
-        displayGraph(window.data);    
+        // These are the steps after normalization. You can't normalize twice.
+        renderCalendarGraph(window.data);
+        renderActivityGraph(window.data);
+        displayContent();
     }
 };
 window.addEventListener("resize", function() {
     init();
     if (window.data) {
-        displayGraph(window.data);    
+        // These are the steps after normalization. You can't normalize twice.
+        renderCalendarGraph(window.data);
+        renderActivityGraph(window.data);
+        displayContent();
     }
 }, true);
 init();

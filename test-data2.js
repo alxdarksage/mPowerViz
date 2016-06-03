@@ -728,3 +728,34 @@ var testData = {
       }
    }
 }
+
+// This is one record back from Bruce's real data processing. It looks very odd right now
+
+{  
+    "2016-05-16":{  
+        "tap":{  
+            "pre":"NA",
+            "post":0,
+            "controlMin":0.451013121087296,
+            "controlMax":1
+        },
+        "voice":{  
+            "pre":"NA",
+            "post":0.726049812543305,
+            "controlMin":0,
+            "controlMax":0.755190402607154
+        },
+        "gait":{  
+            "pre":"NA",
+            "post":"NA",
+            "controlMin":0.0736676004769708,
+            "controlMax":1
+        },
+        "balance":{  
+            "pre":"NA",
+            "post":"NA",
+            "controlMin":0,
+            "controlMax":0.928531892816869
+        }
+    }
+}
