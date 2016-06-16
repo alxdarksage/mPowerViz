@@ -25,34 +25,6 @@ var testData = {
             "controlMax":0.480214082828355
         }
     },
-    /*
-    "2016-03-03":{  
-        "tap":{  
-            "pre":"NA",
-            "post":0.463401818758039,
-            "controlMin":0.452275209370669,
-            "controlMax":1
-        },
-        "voice":{  
-            "pre":"NA",
-            "post":0.683632482225779,
-            "controlMin":0,
-            "controlMax":0.266819171704767
-        },
-        "gait":{  
-            "pre":"NA",
-            "post":0.562250313173248,
-            "controlMin":0.313588662555851,
-            "controlMax":0.749412921556291
-        },
-        "balance":{  
-            "pre":"NA",
-            "post":0.17317498798763,
-            "controlMin":0,
-            "controlMax":0.480214082828355
-        }
-    },
-    */
     "2016-03-04":{  
         "tap":{  
             "pre":"NA",
@@ -182,33 +154,7 @@ var testData = {
             "controlMin":0,
             "controlMax":0.480214082828355
         }
-    },/*
-    "2016-03-09":{  
-        "tap":{  
-            "pre":0.110955365054742,
-            "post":"NA",
-            "controlMin":0.452275209370669,
-            "controlMax":1
-        },
-        "voice":{  
-            "pre":0.189091153343489,
-            "post":"NA",
-            "controlMin":0,
-            "controlMax":0.266819171704767
-        },
-        "gait":{  
-            "pre":0.57467297915555,
-            "post":"NA",
-            "controlMin":0.313588662555851,
-            "controlMax":0.749412921556291
-        },
-        "balance":{  
-            "pre":0.153069498948984,
-            "post":"NA",
-            "controlMin":0,
-            "controlMax":0.480214082828355
-        }
-    },*/
+    },
     "2016-03-10":{  
         "tap":{  
             "pre":"NA",

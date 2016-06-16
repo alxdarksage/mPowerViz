@@ -71,7 +71,7 @@ function displayContent() {
 }
 function handleLoad(response) {
     console.debug("handleLoad",response);
-    
+
     var status = response.currentTarget.status;
     var text = response.currentTarget.responseText;
     if (text === "" || text === "{}" || text === "null") {
@@ -79,6 +79,10 @@ function handleLoad(response) {
         return;
     }
     var json = JSON.parse(text);
+    if (json.items.length === 0) {
+        displayNoData();
+        return;
+    }
     switch(status) {
         case 200:
             return displayGraph(json);
@@ -89,18 +93,19 @@ function handleLoad(response) {
     }
 }
 function displayGraph(json) {
-    if (Object.keys(json).length === 0) {
-        displayNoData();
-        return;
-    }
     console.debug("displayGraph",json);
-    json = normalizeJson(json);
+    json = normalizeJson(json.items);
     window.data = json; // for reloads, hold this data in global scope
     renderCalendarGraph(json);
     renderActivityGraph(json);
     displayContent();
 }
 function normalizeJson(response) {
+    response = response.reduce(function(obj, item) {
+        obj[item.date] = JSON.parse(item.data);
+        return obj;
+    }, {});
+
     var data = {meta:{now:new Date()}};
 
     var startDate = fourWeeksAgoISOString();
@@ -166,9 +171,12 @@ function normalizeJson(response) {
     return data;
 }
 function seekToValue(activity, operator, field) {
-    return Math[operator].apply(Math, activity[field].filter(function(value) {
+    // Math.min or Math.max, applied to all controlMin/controlMax values weeding
+    // out zeroes, because we insert zeroes to pad the sparse data set.
+    var arrayWithoutZeroes = activity[field].filter(function(value) {
         return value !== 0;
-    }));
+    });
+    return Math[operator].apply(Math, arrayWithoutZeroes);
 }
 function toUTCDateString(dateString) {
     var parts = dateString.split("-");
@@ -199,10 +207,8 @@ function renderCalendarGraph(json) {
         var canvas = el("c"+(offset+i-1));
         
         if (canvas == null) {
-            console.log(i);
             return;
         }
-        
         var comps = parseDateString(data.date);
         if (comps.month !== lastMonth || i === json.calendar.length-1) {
             canvas.nextSibling.textContent = (MONTHS[comps.month] + " " + comps.dayOfMonth);
@@ -329,7 +335,7 @@ window.display = function(sessionToken) {
     var startDate = fourWeeksAgoISOString();
     var endDate = nowISOString();
 
-    var url = 'https://webservices.sagebridge.org/parkinson/visualization' +
+    var url = 'https://webservices.sagebridge.org/v3/users/self/reports/thirty-day-report' +
             '?startDate='+startDate+'&endDate='+endDate;
 
     console.info("Querying for ", startDate, "-", endDate);
